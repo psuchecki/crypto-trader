@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Scope(value = "singleton")
-public class BittrexExchangeHelper {
+public class BittrexExchangeHelper implements ExchangeHelper {
 
 	private Exchange exchange;
 
@@ -24,6 +24,7 @@ public class BittrexExchangeHelper {
 		exchange = ExchangeFactory.INSTANCE.createExchange(exSpec);
 	}
 
+	@Override
 	public Exchange getExchange() {
 		return exchange;
 	}

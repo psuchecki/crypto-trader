@@ -9,7 +9,7 @@ public class ShortOrderBuilder {
 	private Order.OrderStatus orderStatus;
 	private Order.OrderType orderType;
 	private BigDecimal originalAmount;
-	private BigDecimal price;
+	private BigDecimal origrinalPrice;
 
 	public ShortOrderBuilder setRef(String ref) {
 		this.ref = ref;
@@ -31,12 +31,12 @@ public class ShortOrderBuilder {
 		return this;
 	}
 
-	public ShortOrderBuilder setPrice(BigDecimal price) {
-		this.price = price;
+	public ShortOrderBuilder setOrigrinalPrice(BigDecimal origrinalPrice) {
+		this.origrinalPrice = origrinalPrice;
 		return this;
 	}
 
 	public ShortOrder createShortOrder() {
-		return new ShortOrder(ref, orderStatus, orderType, originalAmount, price);
+		return new ShortOrder(ref, orderStatus, orderType, originalAmount, origrinalPrice);
 	}
 }

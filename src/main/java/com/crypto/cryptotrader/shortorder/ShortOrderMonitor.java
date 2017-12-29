@@ -20,8 +20,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import com.crypto.cryptotrader.calculation.CalculationUtils;
-import com.crypto.cryptotrader.exchange.BittrexClient;
-import com.crypto.cryptotrader.exchange.BittrexExchangeHelper;
+import com.crypto.cryptotrader.exchange.ExchangeHelper;
 
 @Component
 public class ShortOrderMonitor {
@@ -30,10 +29,10 @@ public class ShortOrderMonitor {
 	private ShortOrderRepository shortOrderRepository;
 
 	@Autowired
-	private BittrexExchangeHelper bittrexExchangeHelper;
+	private ExchangeHelper exchangeHelper;
 
 	@Autowired
-	private BittrexClient bittrexClient;
+	private ShortOrderExecutor shortOrderExecutor;
 
 	@Scheduled(fixedRate = 5000)
 	public void handleCompletedBids() throws IOException {
@@ -47,7 +46,7 @@ public class ShortOrderMonitor {
 		}
 
 		TradeHistoryParamsAll tradeHistoryParamsAll = new TradeHistoryParamsAll();
-		UserTrades tradeHistory = bittrexExchangeHelper.getExchange().getTradeService().getTradeHistory
+		UserTrades tradeHistory = exchangeHelper.getExchange().getTradeService().getTradeHistory
 				(tradeHistoryParamsAll);
 
 		Map<String, BigDecimal> orderIdToPriceMap = tradeHistory.getUserTrades().stream().collect(Collectors.toMap
@@ -59,11 +58,11 @@ public class ShortOrderMonitor {
 
 		completedShortOrders.forEach(closedShortOrder -> {
 					closedShortOrder.setOrderStatus(Order.OrderStatus.FILLED);
-					closedShortOrder.setPrice(orderIdToPriceMap.get(closedShortOrder.getRef()));
+					closedShortOrder.setOrigrinalPrice(orderIdToPriceMap.get(closedShortOrder.getRef()));
 				}
 		);
 
-		bittrexClient.executeShortAskOrder(completedShortOrders);
+		shortOrderExecutor.executeShortAskOrder(completedShortOrders);
 		shortOrderRepository.saveAll(completedShortOrders);
 	}
 
@@ -89,20 +88,18 @@ public class ShortOrderMonitor {
 	}
 
 	private void tryStopLoss(ShortOrder pendingAsk) throws IOException {
-		Ticker ticker = bittrexExchangeHelper.getExchange().getMarketDataService().getTicker(CalculationUtils
-				.BTC_DOGE);
+		Ticker ticker = exchangeHelper.getExchange().getMarketDataService().getTicker(CalculationUtils.BTC_DOGE);
 
 		BigDecimal lastPrice = ticker.getLast();
-		BigDecimal stopLossOffset = CalculationUtils.calculateOffset(pendingAsk.getPrice(), CalculationUtils
+		BigDecimal stopLossOffset = CalculationUtils.calculateOffset(pendingAsk.getOrigrinalPrice(), CalculationUtils
 				.STOP_LOSS_PERCENTAGE);
-//		BigDecimal stopLossThreshold = pendingAsk.getPrice().subtract(stopLossOffset);
-		BigDecimal stopLossThreshold = pendingAsk.getPrice().add(stopLossOffset); //wrong
+		BigDecimal stopLossThreshold = pendingAsk.getOrigrinalPrice().subtract(stopLossOffset);
+//		BigDecimal stopLossThreshold = pendingAsk.getOrigrinalPrice().add(stopLossOffset); //wrong
 
 		if (lastPrice.compareTo(stopLossThreshold) < 0) {
-			boolean cancelOrder = bittrexExchangeHelper.getExchange().getTradeService().cancelOrder(pendingAsk.getRef
-					());
+			boolean cancelOrder = exchangeHelper.getExchange().getTradeService().cancelOrder(pendingAsk.getRef());
 			if (cancelOrder) {
-				bittrexClient.executeStopLoss(pendingAsk, lastPrice);
+				shortOrderExecutor.executeStopLoss(pendingAsk, lastPrice);
 				pendingAsk.setOrderStatus(Order.OrderStatus.CANCELED);
 				shortOrderRepository.save(pendingAsk);
 			}
@@ -111,18 +108,17 @@ public class ShortOrderMonitor {
 
 	private boolean markAskCompleted(ShortOrder pendingAsk) throws IOException {
 		TradeHistoryParamsAll tradeHistoryParamsAll = new TradeHistoryParamsAll();
-		UserTrades tradeHistory = bittrexExchangeHelper.getExchange().getTradeService().getTradeHistory
+		UserTrades tradeHistory = exchangeHelper.getExchange().getTradeService().getTradeHistory
 				(tradeHistoryParamsAll);
 		Map<String, BigDecimal> orderIdToPriceMap = tradeHistory.getUserTrades().stream().collect(Collectors.toMap
 				(UserTrade::getOrderId, Trade::getPrice));
 
 		Optional<String> completedAskOptional = orderIdToPriceMap.keySet().stream().filter(orderRef -> orderRef.equals
-				(pendingAsk
-				.getRef())).findFirst();
+				(pendingAsk.getRef())).findFirst();
 
 		if (completedAskOptional.isPresent()) {
 			pendingAsk.setOrderStatus(Order.OrderStatus.FILLED);
-			pendingAsk.setPrice(orderIdToPriceMap.get(pendingAsk.getRef()));
+			pendingAsk.setOrigrinalPrice(orderIdToPriceMap.get(pendingAsk.getRef()));
 			shortOrderRepository.save(pendingAsk);
 			return true;
 		}

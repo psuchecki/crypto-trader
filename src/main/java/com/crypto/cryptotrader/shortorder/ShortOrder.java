@@ -15,15 +15,15 @@ public class ShortOrder {
 	private Order.OrderStatus orderStatus;
 	private Order.OrderType orderType;
 	private BigDecimal originalAmount;
-	private BigDecimal price;
+	private BigDecimal origrinalPrice;
 
 	public ShortOrder(String ref, Order.OrderStatus orderStatus, Order.OrderType orderType, BigDecimal originalAmount,
-					  BigDecimal price) {
+					  BigDecimal origrinalPrice) {
 		this.ref = ref;
 		this.orderStatus = orderStatus;
 		this.orderType = orderType;
 		this.originalAmount = originalAmount;
-		this.price = price;
+		this.origrinalPrice = origrinalPrice;
 	}
 
 	public String getId() {
@@ -66,11 +66,11 @@ public class ShortOrder {
 		return originalAmount;
 	}
 
-	public void setPrice(BigDecimal price) {
-		this.price = price;
+	public void setOrigrinalPrice(BigDecimal origrinalPrice) {
+		this.origrinalPrice = origrinalPrice;
 	}
 
-	public BigDecimal getPrice() {
-		return price;
+	public BigDecimal getOrigrinalPrice() {
+		return origrinalPrice;
 	}
 }
