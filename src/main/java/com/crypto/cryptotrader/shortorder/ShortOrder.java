@@ -2,9 +2,12 @@ package com.crypto.cryptotrader.shortorder;
 
 import java.math.BigDecimal;
 
+import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.Order;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import com.crypto.cryptotrader.calculation.CurrencyUtils;
 
 @Document(collection = "shortOrder")
 public class ShortOrder {
@@ -15,15 +18,25 @@ public class ShortOrder {
 	private Order.OrderStatus orderStatus;
 	private Order.OrderType orderType;
 	private BigDecimal originalAmount;
-	private BigDecimal origrinalPrice;
+	private BigDecimal originalPrice;
+	private String baseCurrencyCode;
 
 	public ShortOrder(String ref, Order.OrderStatus orderStatus, Order.OrderType orderType, BigDecimal originalAmount,
-					  BigDecimal origrinalPrice) {
+					  BigDecimal originalPrice, String baseCurrencyCode) {
 		this.ref = ref;
 		this.orderStatus = orderStatus;
 		this.orderType = orderType;
 		this.originalAmount = originalAmount;
-		this.origrinalPrice = origrinalPrice;
+		this.originalPrice = originalPrice;
+		this.baseCurrencyCode = baseCurrencyCode;
+	}
+
+	public String getBaseCurrencyCode() {
+		return baseCurrencyCode;
+	}
+
+	public void setBaseCurrencyCode(String baseCurrencyCode) {
+		this.baseCurrencyCode = baseCurrencyCode;
 	}
 
 	public String getId() {
@@ -66,11 +79,15 @@ public class ShortOrder {
 		return originalAmount;
 	}
 
-	public void setOrigrinalPrice(BigDecimal origrinalPrice) {
-		this.origrinalPrice = origrinalPrice;
+	public void setOriginalPrice(BigDecimal originalPrice) {
+		this.originalPrice = originalPrice;
 	}
 
-	public BigDecimal getOrigrinalPrice() {
-		return origrinalPrice;
+	public BigDecimal getOriginalPrice() {
+		return originalPrice;
+	}
+
+	public CurrencyPair getCurrencyPair() {
+		return CurrencyUtils.toCurrencyPair(baseCurrencyCode);
 	}
 }

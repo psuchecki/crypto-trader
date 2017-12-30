@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,6 +50,7 @@ public class ShortOrderIntegrationTest {
 	public static final String BID_REF = "12345";
 	public static final String ASK_REF = "54321";
 	public static final String STOP_LOSS_REF = "33333";
+	public static final String DOGE_CODE = "DOGE";
 
 	@Autowired
 	private ShortOrderExecutor shortOrderExecutor;
@@ -68,7 +70,6 @@ public class ShortOrderIntegrationTest {
 
 	@Before
 	public void setUp() throws Exception {
-		shortOrderRepository.deleteAll();
 		given(exchangeHelper.getExchange()).willReturn(bittrexExchange);
 		given(bittrexExchange.getMarketDataService()).willReturn(marketDataService);
 		given(bittrexExchange.getTradeService()).willReturn(tradeService);
@@ -76,11 +77,16 @@ public class ShortOrderIntegrationTest {
 		given(marketDataService.getTicker(CalculationUtils.BTC_DOGE)).willReturn(ticker);
 	}
 
+	@After
+	public void tearDown() throws Exception {
+		shortOrderRepository.deleteAll();
+	}
+
 	@Test
 	public void shouldExecuteShortBidOrder() throws Exception {
 		given(tradeService.placeLimitOrder(any(LimitOrder.class))).willReturn(BID_REF);
 
-		shortOrderExecutor.executeShortBidOrder(DOGE_AMOUNT);
+		shortOrderExecutor.executeShortBidOrder(DOGE_AMOUNT, DOGE_CODE);
 
 		Example<ShortOrder> newBidExample = Example.of(new ShortOrderBuilder().setRef(BID_REF).setOriginalAmount
 				(DOGE_AMOUNT)
@@ -93,16 +99,16 @@ public class ShortOrderIntegrationTest {
 		given(tradeService.placeLimitOrder(any(LimitOrder.class))).willReturn(BID_REF).willReturn(ASK_REF);
 		setupUserTrades(BID_REF);
 
-		shortOrderExecutor.executeShortBidOrder(DOGE_AMOUNT);
+		shortOrderExecutor.executeShortBidOrder(DOGE_AMOUNT, DOGE_CODE);
 		shortOrderMonitor.handleCompletedBids();
 
 		Example<ShortOrder> filledBidExample = Example.of(new ShortOrderBuilder().setRef(BID_REF).setOriginalAmount
-				(DOGE_AMOUNT).setOrderType(Order.OrderType.BID).setOrderStatus(Order.OrderStatus.FILLED).setOrigrinalPrice
+				(DOGE_AMOUNT).setOrderType(Order.OrderType.BID).setOrderStatus(Order.OrderStatus.FILLED).setOriginalPrice
 						(BID_ACTUAL_PRICE).createShortOrder());
 		assertThat(shortOrderRepository.findAll(filledBidExample).size()).isEqualTo(1);
 
 		Example<ShortOrder> newAskExample = Example.of(new ShortOrderBuilder().setRef(ASK_REF).setOriginalAmount
-				(DOGE_AMOUNT).setOrderType(Order.OrderType.ASK).setOrderStatus(Order.OrderStatus.NEW).setOrigrinalPrice
+				(DOGE_AMOUNT).setOrderType(Order.OrderType.ASK).setOrderStatus(Order.OrderStatus.NEW).setOriginalPrice
 				(BID_ACTUAL_PRICE).createShortOrder());
 		assertThat(shortOrderRepository.findAll(newAskExample).size()).isEqualTo(1);
 	}
@@ -112,17 +118,17 @@ public class ShortOrderIntegrationTest {
 		given(tradeService.placeLimitOrder(any(LimitOrder.class))).willReturn(BID_REF).willReturn(ASK_REF);
 		setupUserTrades(BID_REF, ASK_REF);
 
-		shortOrderExecutor.executeShortBidOrder(DOGE_AMOUNT);
+		shortOrderExecutor.executeShortBidOrder(DOGE_AMOUNT, DOGE_CODE);
 		shortOrderMonitor.handleCompletedBids();
 		shortOrderMonitor.handleCompletedAsks();
 
 		Example<ShortOrder> filledBidExample = Example.of(new ShortOrderBuilder().setRef(BID_REF).setOriginalAmount
-				(DOGE_AMOUNT).setOrderType(Order.OrderType.BID).setOrderStatus(Order.OrderStatus.FILLED).setOrigrinalPrice
+				(DOGE_AMOUNT).setOrderType(Order.OrderType.BID).setOrderStatus(Order.OrderStatus.FILLED).setOriginalPrice
 						(BID_ACTUAL_PRICE).createShortOrder());
 		assertThat(shortOrderRepository.findAll(filledBidExample).size()).isEqualTo(1);
 
 		Example<ShortOrder> filledAskExample = Example.of(new ShortOrderBuilder().setRef(ASK_REF).setOriginalAmount
-				(DOGE_AMOUNT).setOrderType(Order.OrderType.ASK).setOrderStatus(Order.OrderStatus.FILLED).setOrigrinalPrice
+				(DOGE_AMOUNT).setOrderType(Order.OrderType.ASK).setOrderStatus(Order.OrderStatus.FILLED).setOriginalPrice
 				(BID_ACTUAL_PRICE).createShortOrder());
 		assertThat(shortOrderRepository.findAll(filledAskExample).size()).isEqualTo(1);
 	}
@@ -137,17 +143,17 @@ public class ShortOrderIntegrationTest {
 		setupUserTrades(BID_REF);
 		given(tradeService.cancelOrder(ASK_REF)).willReturn(true);
 
-		shortOrderExecutor.executeShortBidOrder(DOGE_AMOUNT);
+		shortOrderExecutor.executeShortBidOrder(DOGE_AMOUNT, DOGE_CODE);
 		shortOrderMonitor.handleCompletedBids();
 		shortOrderMonitor.handleCompletedAsks();
 
 		Example<ShortOrder> filledBidExample = Example.of(new ShortOrderBuilder().setRef(BID_REF).setOriginalAmount
-				(DOGE_AMOUNT).setOrderType(Order.OrderType.BID).setOrderStatus(Order.OrderStatus.FILLED).setOrigrinalPrice
+				(DOGE_AMOUNT).setOrderType(Order.OrderType.BID).setOrderStatus(Order.OrderStatus.FILLED).setOriginalPrice
 				(BID_ACTUAL_PRICE).createShortOrder());
 		assertThat(shortOrderRepository.findAll(filledBidExample).size()).isEqualTo(1);
 
 		Example<ShortOrder> cancelledAskExample = Example.of(new ShortOrderBuilder().setRef(ASK_REF).setOriginalAmount
-				(DOGE_AMOUNT).setOrderType(Order.OrderType.ASK).setOrderStatus(Order.OrderStatus.CANCELED).setOrigrinalPrice
+				(DOGE_AMOUNT).setOrderType(Order.OrderType.ASK).setOrderStatus(Order.OrderStatus.CANCELED).setOriginalPrice
 				(BID_ACTUAL_PRICE).createShortOrder());
 		assertThat(shortOrderRepository.findAll(cancelledAskExample).size()).isEqualTo(1);
 

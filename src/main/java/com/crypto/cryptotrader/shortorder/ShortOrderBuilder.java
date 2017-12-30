@@ -9,7 +9,8 @@ public class ShortOrderBuilder {
 	private Order.OrderStatus orderStatus;
 	private Order.OrderType orderType;
 	private BigDecimal originalAmount;
-	private BigDecimal origrinalPrice;
+	private BigDecimal originalPrice;
+	private String baseCurrencyCode;
 
 	public ShortOrderBuilder setRef(String ref) {
 		this.ref = ref;
@@ -31,12 +32,17 @@ public class ShortOrderBuilder {
 		return this;
 	}
 
-	public ShortOrderBuilder setOrigrinalPrice(BigDecimal origrinalPrice) {
-		this.origrinalPrice = origrinalPrice;
+	public ShortOrderBuilder setOriginalPrice(BigDecimal originalPrice) {
+		this.originalPrice = originalPrice;
+		return this;
+	}
+
+	public ShortOrderBuilder setBaseCurrencyCode(String baseCurrencyCode) {
+		this.baseCurrencyCode = baseCurrencyCode;
 		return this;
 	}
 
 	public ShortOrder createShortOrder() {
-		return new ShortOrder(ref, orderStatus, orderType, originalAmount, origrinalPrice);
+		return new ShortOrder(ref, orderStatus, orderType, originalAmount, originalPrice, baseCurrencyCode);
 	}
 }

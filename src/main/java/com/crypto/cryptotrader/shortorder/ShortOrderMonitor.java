@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.Order;
 import org.knowm.xchange.dto.marketdata.Ticker;
 import org.knowm.xchange.dto.marketdata.Trade;
@@ -45,7 +46,10 @@ public class ShortOrderMonitor {
 			return;
 		}
 
+		List<CurrencyPair> currencyPairs = pendingNewShortOrders.stream().map(pendingShortOrder -> pendingShortOrder
+				.getCurrencyPair()).collect(Collectors.toList());
 		TradeHistoryParamsAll tradeHistoryParamsAll = new TradeHistoryParamsAll();
+		tradeHistoryParamsAll.setCurrencyPairs(currencyPairs);
 		UserTrades tradeHistory = exchangeHelper.getExchange().getTradeService().getTradeHistory
 				(tradeHistoryParamsAll);
 
@@ -55,10 +59,9 @@ public class ShortOrderMonitor {
 				.filter(shortOrder -> orderIdToPriceMap.keySet().contains(shortOrder.getRef()))
 				.collect(Collectors.toList());
 
-
 		completedShortOrders.forEach(closedShortOrder -> {
 					closedShortOrder.setOrderStatus(Order.OrderStatus.FILLED);
-					closedShortOrder.setOrigrinalPrice(orderIdToPriceMap.get(closedShortOrder.getRef()));
+					closedShortOrder.setOriginalPrice(orderIdToPriceMap.get(closedShortOrder.getRef()));
 				}
 		);
 
@@ -88,13 +91,13 @@ public class ShortOrderMonitor {
 	}
 
 	private void tryStopLoss(ShortOrder pendingAsk) throws IOException {
-		Ticker ticker = exchangeHelper.getExchange().getMarketDataService().getTicker(CalculationUtils.BTC_DOGE);
+		Ticker ticker = exchangeHelper.getExchange().getMarketDataService().getTicker(pendingAsk.getCurrencyPair());
 
 		BigDecimal lastPrice = ticker.getLast();
-		BigDecimal stopLossOffset = CalculationUtils.calculateOffset(pendingAsk.getOrigrinalPrice(), CalculationUtils
+		BigDecimal stopLossOffset = CalculationUtils.calculateOffset(pendingAsk.getOriginalPrice(), CalculationUtils
 				.STOP_LOSS_PERCENTAGE);
-		BigDecimal stopLossThreshold = pendingAsk.getOrigrinalPrice().subtract(stopLossOffset);
-//		BigDecimal stopLossThreshold = pendingAsk.getOrigrinalPrice().add(stopLossOffset); //wrong
+		BigDecimal stopLossThreshold = pendingAsk.getOriginalPrice().subtract(stopLossOffset);
+//		BigDecimal stopLossThreshold = pendingAsk.getOriginalPrice().add(stopLossOffset); //wrong
 
 		if (lastPrice.compareTo(stopLossThreshold) < 0) {
 			boolean cancelOrder = exchangeHelper.getExchange().getTradeService().cancelOrder(pendingAsk.getRef());
@@ -108,6 +111,7 @@ public class ShortOrderMonitor {
 
 	private boolean markAskCompleted(ShortOrder pendingAsk) throws IOException {
 		TradeHistoryParamsAll tradeHistoryParamsAll = new TradeHistoryParamsAll();
+		tradeHistoryParamsAll.setCurrencyPair(pendingAsk.getCurrencyPair());
 		UserTrades tradeHistory = exchangeHelper.getExchange().getTradeService().getTradeHistory
 				(tradeHistoryParamsAll);
 		Map<String, BigDecimal> orderIdToPriceMap = tradeHistory.getUserTrades().stream().collect(Collectors.toMap
@@ -118,7 +122,7 @@ public class ShortOrderMonitor {
 
 		if (completedAskOptional.isPresent()) {
 			pendingAsk.setOrderStatus(Order.OrderStatus.FILLED);
-			pendingAsk.setOrigrinalPrice(orderIdToPriceMap.get(pendingAsk.getRef()));
+			pendingAsk.setOriginalPrice(orderIdToPriceMap.get(pendingAsk.getRef()));
 			shortOrderRepository.save(pendingAsk);
 			return true;
 		}

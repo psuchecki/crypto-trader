@@ -1,5 +1,7 @@
 package com.crypto.cryptotrader;
 
+import java.math.BigDecimal;
+
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +22,7 @@ public class Starter {
 
 	@PostConstruct
 	public void init() throws Exception {
-//		bittrexClient.executeShortBidOrder(BigDecimal.valueOf(1500));
+//		shortOrderExecutor.executeShortBidOrder(BigDecimal.valueOf(1500), "DOGE");
 //		shortOrderMonitor.handleCompletedBids();
 //		shortOrderMonitor.handleCompletedAsks();
 
