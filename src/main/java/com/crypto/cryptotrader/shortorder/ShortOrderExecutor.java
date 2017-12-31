@@ -27,14 +27,16 @@ public class ShortOrderExecutor {
 	@Autowired
 	private ExchangeHelper exchangeHelper;
 
-	public void executeShortBidOrder(BigDecimal originalAmount, String baseCurrencyCode) throws IOException {
+	public void executeShortBidOrder(String baseCurrencyCode) throws IOException {
 		Exchange bittrex = exchangeHelper.getExchange();
 		CurrencyPair currencyPair = CurrencyUtils.toCurrencyPair(baseCurrencyCode);
 		MarketDataService marketDataService = bittrex.getMarketDataService();
 		Ticker ticker = marketDataService.getTicker(currencyPair);
+		BigDecimal originalAmount = CurrencyUtils.calculateOriginalAmount(ticker.getLast());
 
 		BigDecimal bidOffsetLimit = CalculationUtils.calculateOffset(ticker.getBid(), CalculationUtils
 				.BID_OFFSET_PERCENTAGE);
+//		BigDecimal bidPrice = ticker.getBid().subtract(bidOffsetLimit); //wrong
 		BigDecimal bidPrice = ticker.getBid().add(bidOffsetLimit);
 		LimitOrder bidLimitOrder = new LimitOrder.Builder(OrderType.BID, currencyPair).originalAmount
 				(originalAmount).limitPrice(bidPrice).build();

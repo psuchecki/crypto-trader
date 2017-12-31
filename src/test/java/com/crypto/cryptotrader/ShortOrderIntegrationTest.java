@@ -86,7 +86,7 @@ public class ShortOrderIntegrationTest {
 	public void shouldExecuteShortBidOrder() throws Exception {
 		given(tradeService.placeLimitOrder(any(LimitOrder.class))).willReturn(BID_REF);
 
-		shortOrderExecutor.executeShortBidOrder(DOGE_AMOUNT, DOGE_CODE);
+		shortOrderExecutor.executeShortBidOrder(DOGE_CODE);
 
 		Example<ShortOrder> newBidExample = Example.of(new ShortOrderBuilder().setRef(BID_REF).setOriginalAmount
 				(DOGE_AMOUNT)
@@ -99,7 +99,7 @@ public class ShortOrderIntegrationTest {
 		given(tradeService.placeLimitOrder(any(LimitOrder.class))).willReturn(BID_REF).willReturn(ASK_REF);
 		setupUserTrades(BID_REF);
 
-		shortOrderExecutor.executeShortBidOrder(DOGE_AMOUNT, DOGE_CODE);
+		shortOrderExecutor.executeShortBidOrder(DOGE_CODE);
 		shortOrderMonitor.handleCompletedBids();
 
 		Example<ShortOrder> filledBidExample = Example.of(new ShortOrderBuilder().setRef(BID_REF).setOriginalAmount
@@ -118,7 +118,7 @@ public class ShortOrderIntegrationTest {
 		given(tradeService.placeLimitOrder(any(LimitOrder.class))).willReturn(BID_REF).willReturn(ASK_REF);
 		setupUserTrades(BID_REF, ASK_REF);
 
-		shortOrderExecutor.executeShortBidOrder(DOGE_AMOUNT, DOGE_CODE);
+		shortOrderExecutor.executeShortBidOrder(DOGE_CODE);
 		shortOrderMonitor.handleCompletedBids();
 		shortOrderMonitor.handleCompletedAsks();
 
@@ -143,7 +143,7 @@ public class ShortOrderIntegrationTest {
 		setupUserTrades(BID_REF);
 		given(tradeService.cancelOrder(ASK_REF)).willReturn(true);
 
-		shortOrderExecutor.executeShortBidOrder(DOGE_AMOUNT, DOGE_CODE);
+		shortOrderExecutor.executeShortBidOrder(DOGE_CODE);
 		shortOrderMonitor.handleCompletedBids();
 		shortOrderMonitor.handleCompletedAsks();
 

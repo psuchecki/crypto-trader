@@ -7,6 +7,8 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+//import com.crypto.cryptotrader.feeds.GmailFeeder;
+import com.crypto.cryptotrader.feeds.GmailFeeder;
 import com.crypto.cryptotrader.shortorder.ShortOrderExecutor;
 import com.crypto.cryptotrader.shortorder.ShortOrderMonitor;
 import com.crypto.cryptotrader.shortorder.ShortOrderRepository;
@@ -19,9 +21,12 @@ public class Starter {
 	private ShortOrderMonitor shortOrderMonitor;
 	@Autowired
 	private ShortOrderRepository shortOrderRepository;
+	@Autowired
+	private GmailFeeder gmailFeeder;
 
 	@PostConstruct
 	public void init() throws Exception {
+//		gmailFeeder.checkForFeeds();
 //		shortOrderExecutor.executeShortBidOrder(BigDecimal.valueOf(1500), "DOGE");
 //		shortOrderMonitor.handleCompletedBids();
 //		shortOrderMonitor.handleCompletedAsks();
