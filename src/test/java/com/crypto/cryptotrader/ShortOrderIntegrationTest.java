@@ -1,12 +1,16 @@
 package com.crypto.cryptotrader;
 
+import static com.crypto.cryptotrader.feeds.GmailFeeder.AUTHENTICATED_USER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,6 +20,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.knowm.xchange.bittrex.BittrexExchange;
+import org.knowm.xchange.currency.Currency;
+import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.Order;
 import org.knowm.xchange.dto.marketdata.Ticker;
 import org.knowm.xchange.dto.marketdata.Trades;
@@ -25,32 +31,42 @@ import org.knowm.xchange.dto.trade.UserTrades;
 import org.knowm.xchange.service.marketdata.MarketDataService;
 import org.knowm.xchange.service.trade.TradeService;
 import org.knowm.xchange.service.trade.params.TradeHistoryParamsAll;
+import org.mockito.Answers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Example;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.crypto.cryptotrader.calculation.CalculationUtils;
 import com.crypto.cryptotrader.exchange.ExchangeHelper;
+import com.crypto.cryptotrader.feeds.GmailFeeder;
 import com.crypto.cryptotrader.shortorder.ShortOrder;
 import com.crypto.cryptotrader.shortorder.ShortOrderBuilder;
 import com.crypto.cryptotrader.shortorder.ShortOrderExecutor;
 import com.crypto.cryptotrader.shortorder.ShortOrderMonitor;
 import com.crypto.cryptotrader.shortorder.ShortOrderRepository;
+import com.google.api.services.gmail.Gmail;
+import com.google.api.services.gmail.model.ListMessagesResponse;
+import com.google.api.services.gmail.model.Message;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class ShortOrderIntegrationTest {
 
-	public static final BigDecimal DOGE_AMOUNT = BigDecimal.valueOf(1500);
 	public static final BigDecimal BID_LIMIT_PRICE = BigDecimal.valueOf(0.00000050);
+	public static final BigDecimal BID_LAST_PRICE = BigDecimal.valueOf(0.00000045);
 	public static final BigDecimal SELL_LOSS_PRICE = BigDecimal.valueOf(0.00000010);
 	public static final BigDecimal BID_ACTUAL_PRICE = BigDecimal.valueOf(0.00000052);
 	public static final String BID_REF = "12345";
 	public static final String ASK_REF = "54321";
 	public static final String STOP_LOSS_REF = "33333";
 	public static final String DOGE_CODE = "DOGE";
+	public static final String MESSAGE_ID = "message1";
+	public static final String ALAN_BODY_SNIPPET = "Dear ilinx99, alanmasters you follow published new idea " +
+			"Aurum (AUR) - 2018 " +
+			"Opportunity (1230%+ Profits Potential). TradingView Team www.tradingview.com";
+	public static final CurrencyPair BTC_DOGE = new CurrencyPair(Currency.DOGE, Currency.BTC);
+	public static final CurrencyPair BTC_AUR = new CurrencyPair(Currency.AUR, Currency.BTC);
 
 	@Autowired
 	private ShortOrderExecutor shortOrderExecutor;
@@ -58,6 +74,8 @@ public class ShortOrderIntegrationTest {
 	private ShortOrderRepository shortOrderRepository;
 	@Autowired
 	private ShortOrderMonitor shortOrderMonitor;
+	@Autowired
+	private GmailFeeder gmailFeeder;
 
 	@MockBean
 	private ExchangeHelper exchangeHelper;
@@ -67,14 +85,17 @@ public class ShortOrderIntegrationTest {
 	private MarketDataService marketDataService;
 	@MockBean
 	private TradeService tradeService;
+	@MockBean(answer = Answers.RETURNS_DEEP_STUBS)
+	private Gmail gmailService;
 
 	@Before
 	public void setUp() throws Exception {
 		given(exchangeHelper.getExchange()).willReturn(bittrexExchange);
 		given(bittrexExchange.getMarketDataService()).willReturn(marketDataService);
 		given(bittrexExchange.getTradeService()).willReturn(tradeService);
-		Ticker ticker = new Ticker.Builder().bid(BID_LIMIT_PRICE).build();
-		given(marketDataService.getTicker(CalculationUtils.BTC_DOGE)).willReturn(ticker);
+		Ticker ticker = new Ticker.Builder().bid(BID_LIMIT_PRICE).last(BID_LAST_PRICE).build();
+		given(marketDataService.getTicker(BTC_DOGE)).willReturn(ticker);
+		given(marketDataService.getTicker(BTC_AUR)).willReturn(ticker);
 	}
 
 	@After
@@ -88,8 +109,7 @@ public class ShortOrderIntegrationTest {
 
 		shortOrderExecutor.executeShortBidOrder(DOGE_CODE);
 
-		Example<ShortOrder> newBidExample = Example.of(new ShortOrderBuilder().setRef(BID_REF).setOriginalAmount
-				(DOGE_AMOUNT)
+		Example<ShortOrder> newBidExample = Example.of(new ShortOrderBuilder().setRef(BID_REF)
 				.setOrderType(Order.OrderType.BID).setOrderStatus(Order.OrderStatus.NEW).createShortOrder());
 		assertThat(shortOrderRepository.findAll(newBidExample).size()).isEqualTo(1);
 	}
@@ -102,13 +122,11 @@ public class ShortOrderIntegrationTest {
 		shortOrderExecutor.executeShortBidOrder(DOGE_CODE);
 		shortOrderMonitor.handleCompletedBids();
 
-		Example<ShortOrder> filledBidExample = Example.of(new ShortOrderBuilder().setRef(BID_REF).setOriginalAmount
-				(DOGE_AMOUNT).setOrderType(Order.OrderType.BID).setOrderStatus(Order.OrderStatus.FILLED).setOriginalPrice
+		Example<ShortOrder> filledBidExample = Example.of(new ShortOrderBuilder().setRef(BID_REF).setOrderType(Order.OrderType.BID).setOrderStatus(Order.OrderStatus.FILLED).setOriginalPrice
 						(BID_ACTUAL_PRICE).createShortOrder());
 		assertThat(shortOrderRepository.findAll(filledBidExample).size()).isEqualTo(1);
 
-		Example<ShortOrder> newAskExample = Example.of(new ShortOrderBuilder().setRef(ASK_REF).setOriginalAmount
-				(DOGE_AMOUNT).setOrderType(Order.OrderType.ASK).setOrderStatus(Order.OrderStatus.NEW).setOriginalPrice
+		Example<ShortOrder> newAskExample = Example.of(new ShortOrderBuilder().setRef(ASK_REF).setOrderType(Order.OrderType.ASK).setOrderStatus(Order.OrderStatus.NEW).setOriginalPrice
 				(BID_ACTUAL_PRICE).createShortOrder());
 		assertThat(shortOrderRepository.findAll(newAskExample).size()).isEqualTo(1);
 	}
@@ -122,22 +140,40 @@ public class ShortOrderIntegrationTest {
 		shortOrderMonitor.handleCompletedBids();
 		shortOrderMonitor.handleCompletedAsks();
 
-		Example<ShortOrder> filledBidExample = Example.of(new ShortOrderBuilder().setRef(BID_REF).setOriginalAmount
-				(DOGE_AMOUNT).setOrderType(Order.OrderType.BID).setOrderStatus(Order.OrderStatus.FILLED).setOriginalPrice
+		Example<ShortOrder> filledBidExample = Example.of(new ShortOrderBuilder().setRef(BID_REF).setOrderType(Order.OrderType.BID).setOrderStatus(Order.OrderStatus.FILLED).setOriginalPrice
 						(BID_ACTUAL_PRICE).createShortOrder());
 		assertThat(shortOrderRepository.findAll(filledBidExample).size()).isEqualTo(1);
 
-		Example<ShortOrder> filledAskExample = Example.of(new ShortOrderBuilder().setRef(ASK_REF).setOriginalAmount
-				(DOGE_AMOUNT).setOrderType(Order.OrderType.ASK).setOrderStatus(Order.OrderStatus.FILLED).setOriginalPrice
+		Example<ShortOrder> filledAskExample = Example.of(new ShortOrderBuilder().setRef(ASK_REF).setOrderType(Order.OrderType.ASK).setOrderStatus(Order.OrderStatus.FILLED).setOriginalPrice
 				(BID_ACTUAL_PRICE).createShortOrder());
 		assertThat(shortOrderRepository.findAll(filledAskExample).size()).isEqualTo(1);
 	}
 
 	@Test
+	public void shouldCompleteFullShortOrderFromAlanGmail() throws IOException {
+		setupGmailMessages();
+		given(tradeService.placeLimitOrder(any(LimitOrder.class))).willReturn(BID_REF).willReturn(ASK_REF);
+		setupUserTrades(BID_REF, ASK_REF);
+
+		gmailFeeder.checkForFeeds();
+		shortOrderMonitor.handleCompletedBids();
+		shortOrderMonitor.handleCompletedAsks();
+
+		Example<ShortOrder> filledBidExample = Example.of(new ShortOrderBuilder().setRef(BID_REF).setOrderType(Order.OrderType.BID).setOrderStatus(Order.OrderStatus.FILLED).setOriginalPrice
+				(BID_ACTUAL_PRICE).createShortOrder());
+		assertThat(shortOrderRepository.findAll(filledBidExample).size()).isEqualTo(1);
+
+		Example<ShortOrder> filledAskExample = Example.of(new ShortOrderBuilder().setRef(ASK_REF).setOrderType(Order.OrderType.ASK).setOrderStatus(Order.OrderStatus.FILLED).setOriginalPrice
+				(BID_ACTUAL_PRICE).createShortOrder());
+		assertThat(shortOrderRepository.findAll(filledAskExample).size()).isEqualTo(1);
+	}
+
+
+	@Test
 	public void shouldExecuteStopLossScenario() throws Exception {
-		Ticker bidTicker = new Ticker.Builder().bid(BID_LIMIT_PRICE).build();
+		Ticker bidTicker = new Ticker.Builder().bid(BID_LIMIT_PRICE).last(BID_LAST_PRICE).build();
 		Ticker stopLossTicker = new Ticker.Builder().last(SELL_LOSS_PRICE).build();
-		given(marketDataService.getTicker(CalculationUtils.BTC_DOGE)).willReturn(bidTicker).willReturn(stopLossTicker);
+		given(marketDataService.getTicker(BTC_DOGE)).willReturn(bidTicker).willReturn(stopLossTicker);
 		given(tradeService.placeLimitOrder(any(LimitOrder.class))).willReturn(BID_REF).willReturn(ASK_REF).willReturn
 				(STOP_LOSS_REF);
 		setupUserTrades(BID_REF);
@@ -147,18 +183,15 @@ public class ShortOrderIntegrationTest {
 		shortOrderMonitor.handleCompletedBids();
 		shortOrderMonitor.handleCompletedAsks();
 
-		Example<ShortOrder> filledBidExample = Example.of(new ShortOrderBuilder().setRef(BID_REF).setOriginalAmount
-				(DOGE_AMOUNT).setOrderType(Order.OrderType.BID).setOrderStatus(Order.OrderStatus.FILLED).setOriginalPrice
+		Example<ShortOrder> filledBidExample = Example.of(new ShortOrderBuilder().setRef(BID_REF).setOrderType(Order.OrderType.BID).setOrderStatus(Order.OrderStatus.FILLED).setOriginalPrice
 				(BID_ACTUAL_PRICE).createShortOrder());
 		assertThat(shortOrderRepository.findAll(filledBidExample).size()).isEqualTo(1);
 
-		Example<ShortOrder> cancelledAskExample = Example.of(new ShortOrderBuilder().setRef(ASK_REF).setOriginalAmount
-				(DOGE_AMOUNT).setOrderType(Order.OrderType.ASK).setOrderStatus(Order.OrderStatus.CANCELED).setOriginalPrice
+		Example<ShortOrder> cancelledAskExample = Example.of(new ShortOrderBuilder().setRef(ASK_REF).setOrderType(Order.OrderType.ASK).setOrderStatus(Order.OrderStatus.CANCELED).setOriginalPrice
 				(BID_ACTUAL_PRICE).createShortOrder());
 		assertThat(shortOrderRepository.findAll(cancelledAskExample).size()).isEqualTo(1);
 
-		Example<ShortOrder> stopLossExample = Example.of(new ShortOrderBuilder().setRef(STOP_LOSS_REF).setOriginalAmount
-				(DOGE_AMOUNT).setOrderType(Order.OrderType.EXIT_ASK).setOrderStatus(Order.OrderStatus.NEW).createShortOrder());
+		Example<ShortOrder> stopLossExample = Example.of(new ShortOrderBuilder().setRef(STOP_LOSS_REF).setOrderType(Order.OrderType.EXIT_ASK).setOrderStatus(Order.OrderStatus.NEW).createShortOrder());
 		assertThat(shortOrderRepository.findAll(stopLossExample).size()).isEqualTo(1);
 	}
 
@@ -167,6 +200,15 @@ public class ShortOrderIntegrationTest {
 				(BID_ACTUAL_PRICE).timestamp(new Date()).build()).collect(Collectors.toList());
 		UserTrades userTrades = new UserTrades(trades, Trades.TradeSortType.SortByTimestamp);
 		given(tradeService.getTradeHistory(any(TradeHistoryParamsAll.class))).willReturn(userTrades);
+	}
+
+	private void setupGmailMessages() throws IOException {
+		Message message = new Message().setId(MESSAGE_ID);
+		ListMessagesResponse listMessagesResponse = new ListMessagesResponse().setMessages(Collections.singletonList(message));
+		given(gmailService.users().messages().list(AUTHENTICATED_USER).setQ(anyString()).execute())
+				.willReturn(listMessagesResponse);
+		Message messageDetail = new Message().setSnippet(ALAN_BODY_SNIPPET);
+		given(gmailService.users().messages().get(AUTHENTICATED_USER, MESSAGE_ID).execute()).willReturn(messageDetail);
 	}
 
 }

@@ -10,7 +10,6 @@ public class CalculationUtils {
 	public static final int BID_OFFSET_PERCENTAGE = 10;
 	public static final int ASK_OFFSET_PERCENTAGE = 5;
 	public static final int DEFAULT_SCALE = 8;
-	public static final CurrencyPair BTC_DOGE = new CurrencyPair(Currency.DOGE, Currency.BTC);
 	public static final int STOP_LOSS_PERCENTAGE = 20;
 	public static final int STOP_LOSS_OFFSET_PERCENTAGE = 70;
 

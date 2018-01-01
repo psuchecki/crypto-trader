@@ -102,9 +102,9 @@ public class ShortOrderMonitor {
 		if (lastPrice.compareTo(stopLossThreshold) < 0) {
 			boolean cancelOrder = exchangeHelper.getExchange().getTradeService().cancelOrder(pendingAsk.getRef());
 			if (cancelOrder) {
-				shortOrderExecutor.executeStopLoss(pendingAsk, lastPrice);
 				pendingAsk.setOrderStatus(Order.OrderStatus.CANCELED);
 				shortOrderRepository.save(pendingAsk);
+				shortOrderExecutor.executeStopLoss(pendingAsk, lastPrice);
 			}
 		}
 	}

@@ -16,6 +16,6 @@ public class CurrencyUtils {
 	}
 
 	public static BigDecimal calculateOriginalAmount(BigDecimal last) {
-		return BigDecimal.valueOf(0.0011).divide(last, INT_SCALE, BigDecimal.ROUND_CEILING);
+		return BigDecimal.valueOf(0.00125).divide(last, INT_SCALE, BigDecimal.ROUND_CEILING);
 	}
 }
