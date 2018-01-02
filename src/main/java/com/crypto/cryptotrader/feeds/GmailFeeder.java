@@ -3,6 +3,8 @@ package com.crypto.cryptotrader.feeds;
 import java.io.IOException;
 import java.util.Collections;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -16,6 +18,7 @@ import com.google.api.services.gmail.model.ModifyMessageRequest;
 
 @Component
 public class GmailFeeder {
+	private static final Logger logger = LoggerFactory.getLogger(GmailFeeder.class);
 	public static final String AUTHENTICATED_USER = "me";
 	public static final ModifyMessageRequest MARK_AS_READ = new ModifyMessageRequest().setRemoveLabelIds(Collections.singletonList
 			("UNREAD"));
@@ -27,7 +30,7 @@ public class GmailFeeder {
 
 	@Scheduled(fixedRate = 300)
 	public void checkForFeeds() throws IOException {
-
+//		logger.info("Checking gmail feeds");
 		ListMessagesResponse primary = gmailService.users().messages().list(AUTHENTICATED_USER)
 //				.setQ("from:piotr.jan.suchecki@gmail.com is:unread").execute();
 				.setQ("from:noreply@tradingview.com is:unread").execute();

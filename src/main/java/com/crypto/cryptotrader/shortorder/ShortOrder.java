@@ -7,7 +7,7 @@ import org.knowm.xchange.dto.Order;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import com.crypto.cryptotrader.calculation.CurrencyUtils;
+import com.crypto.cryptotrader.calculation.CalculationUtils;
 
 @Document(collection = "shortOrder")
 public class ShortOrder {
@@ -88,6 +88,6 @@ public class ShortOrder {
 	}
 
 	public CurrencyPair getCurrencyPair() {
-		return CurrencyUtils.toCurrencyPair(baseCurrencyCode);
+		return CalculationUtils.toCurrencyPair(baseCurrencyCode);
 	}
 }
