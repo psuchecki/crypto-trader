@@ -1,8 +1,10 @@
 package com.crypto.cryptotrader.shortorder;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 import org.knowm.xchange.dto.Order;
+import org.springframework.data.domain.Example;
 
 public class ShortOrderBuilder {
 	private String ref;
@@ -43,6 +45,13 @@ public class ShortOrderBuilder {
 	}
 
 	public ShortOrder createShortOrder() {
-		return new ShortOrder(ref, orderStatus, orderType, originalAmount, originalPrice, baseCurrencyCode);
+		return new ShortOrder(ref, orderStatus, orderType, originalAmount, originalPrice, baseCurrencyCode,
+				new Date());
+	}
+
+	public Example<ShortOrder> createShortOrderExample() {
+		ShortOrder shortOrder = new ShortOrder(ref, orderStatus, orderType, originalAmount, originalPrice,
+				baseCurrencyCode, null);
+		return Example.of(shortOrder);
 	}
 }

@@ -1,6 +1,7 @@
 package com.crypto.cryptotrader.shortorder;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.Order;
@@ -20,15 +21,17 @@ public class ShortOrder {
 	private BigDecimal originalAmount;
 	private BigDecimal originalPrice;
 	private String baseCurrencyCode;
+	private Date createDate;
 
 	public ShortOrder(String ref, Order.OrderStatus orderStatus, Order.OrderType orderType, BigDecimal originalAmount,
-					  BigDecimal originalPrice, String baseCurrencyCode) {
+					  BigDecimal originalPrice, String baseCurrencyCode, Date createDate) {
 		this.ref = ref;
 		this.orderStatus = orderStatus;
 		this.orderType = orderType;
 		this.originalAmount = originalAmount;
 		this.originalPrice = originalPrice;
 		this.baseCurrencyCode = baseCurrencyCode;
+		this.createDate = createDate;
 	}
 
 	public String getBaseCurrencyCode() {
@@ -89,5 +92,13 @@ public class ShortOrder {
 
 	public CurrencyPair getCurrencyPair() {
 		return CalculationUtils.toCurrencyPair(baseCurrencyCode);
+	}
+
+	public Date getCreateDate() {
+		return createDate;
+	}
+
+	public void setCreateDate(Date createDate) {
+		this.createDate = createDate;
 	}
 }

@@ -42,9 +42,8 @@ public class ShortOrderMonitor {
 
 	@Scheduled(fixedRate = 2000)
 	public void handleCompletedBids() throws IOException {
-		ShortOrder shortOrderPattern = new ShortOrderBuilder().setOrderStatus(Order.OrderStatus.NEW)
-				.setOrderType(Order.OrderType.BID).createShortOrder();
-		Example<ShortOrder> pendingNewShortOrdersExample = Example.of(shortOrderPattern);
+		Example<ShortOrder> pendingNewShortOrdersExample = new ShortOrderBuilder().setOrderStatus(Order.OrderStatus.NEW)
+				.setOrderType(Order.OrderType.BID).createShortOrderExample();
 
 		List<ShortOrder> pendingNewShortOrders = shortOrderRepository.findAll(pendingNewShortOrdersExample);
 		if (CollectionUtils.isEmpty(pendingNewShortOrders)) {
@@ -79,9 +78,8 @@ public class ShortOrderMonitor {
 
 	@Scheduled(fixedRate = 5000)
 	public void handleCompletedAsks() throws IOException {
-		ShortOrder shortOrderPattern = new ShortOrderBuilder().setOrderStatus(Order.OrderStatus.NEW)
-				.setOrderType(Order.OrderType.ASK).createShortOrder();
-		Example<ShortOrder> pendingAskExample = Example.of(shortOrderPattern);
+		Example<ShortOrder> pendingAskExample = new ShortOrderBuilder().setOrderStatus(Order.OrderStatus.NEW)
+				.setOrderType(Order.OrderType.ASK).createShortOrderExample();
 
 		List<ShortOrder> pendingAsks = shortOrderRepository.findAll(pendingAskExample);
 		if (CollectionUtils.isEmpty(pendingAsks)) {

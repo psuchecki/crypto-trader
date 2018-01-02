@@ -109,8 +109,8 @@ public class ShortOrderIntegrationTest {
 
 		shortOrderExecutor.executeShortBidOrder(DOGE_CODE);
 
-		Example<ShortOrder> newBidExample = Example.of(new ShortOrderBuilder().setRef(BID_REF)
-				.setOrderType(Order.OrderType.BID).setOrderStatus(Order.OrderStatus.NEW).createShortOrder());
+		Example<ShortOrder> newBidExample = new ShortOrderBuilder().setRef(BID_REF)
+				.setOrderType(Order.OrderType.BID).setOrderStatus(Order.OrderStatus.NEW).createShortOrderExample();
 		assertThat(shortOrderRepository.findAll(newBidExample).size()).isEqualTo(1);
 	}
 
@@ -122,12 +122,12 @@ public class ShortOrderIntegrationTest {
 		shortOrderExecutor.executeShortBidOrder(DOGE_CODE);
 		shortOrderMonitor.handleCompletedBids();
 
-		Example<ShortOrder> filledBidExample = Example.of(new ShortOrderBuilder().setRef(BID_REF).setOrderType(Order.OrderType.BID).setOrderStatus(Order.OrderStatus.FILLED).setOriginalPrice
-						(BID_ACTUAL_PRICE).createShortOrder());
+		Example<ShortOrder> filledBidExample = new ShortOrderBuilder().setRef(BID_REF).setOrderType(Order.OrderType.BID).setOrderStatus(Order.OrderStatus.FILLED).setOriginalPrice
+						(BID_ACTUAL_PRICE).createShortOrderExample();
 		assertThat(shortOrderRepository.findAll(filledBidExample).size()).isEqualTo(1);
 
-		Example<ShortOrder> newAskExample = Example.of(new ShortOrderBuilder().setRef(ASK_REF).setOrderType(Order.OrderType.ASK).setOrderStatus(Order.OrderStatus.NEW).setOriginalPrice
-				(BID_ACTUAL_PRICE).createShortOrder());
+		Example<ShortOrder> newAskExample = new ShortOrderBuilder().setRef(ASK_REF).setOrderType(Order.OrderType.ASK).setOrderStatus(Order.OrderStatus.NEW).setOriginalPrice
+				(BID_ACTUAL_PRICE).createShortOrderExample();
 		assertThat(shortOrderRepository.findAll(newAskExample).size()).isEqualTo(1);
 	}
 
@@ -140,12 +140,12 @@ public class ShortOrderIntegrationTest {
 		shortOrderMonitor.handleCompletedBids();
 		shortOrderMonitor.handleCompletedAsks();
 
-		Example<ShortOrder> filledBidExample = Example.of(new ShortOrderBuilder().setRef(BID_REF).setOrderType(Order.OrderType.BID).setOrderStatus(Order.OrderStatus.FILLED).setOriginalPrice
-						(BID_ACTUAL_PRICE).createShortOrder());
+		Example<ShortOrder> filledBidExample = new ShortOrderBuilder().setRef(BID_REF).setOrderType(Order.OrderType.BID).setOrderStatus(Order.OrderStatus.FILLED).setOriginalPrice
+						(BID_ACTUAL_PRICE).createShortOrderExample();
 		assertThat(shortOrderRepository.findAll(filledBidExample).size()).isEqualTo(1);
 
-		Example<ShortOrder> filledAskExample = Example.of(new ShortOrderBuilder().setRef(ASK_REF).setOrderType(Order.OrderType.ASK).setOrderStatus(Order.OrderStatus.FILLED).setOriginalPrice
-				(BID_ACTUAL_PRICE).createShortOrder());
+		Example<ShortOrder> filledAskExample = new ShortOrderBuilder().setRef(ASK_REF).setOrderType(Order.OrderType.ASK).setOrderStatus(Order.OrderStatus.FILLED).setOriginalPrice
+				(BID_ACTUAL_PRICE).createShortOrderExample();
 		assertThat(shortOrderRepository.findAll(filledAskExample).size()).isEqualTo(1);
 	}
 
@@ -159,12 +159,12 @@ public class ShortOrderIntegrationTest {
 		shortOrderMonitor.handleCompletedBids();
 		shortOrderMonitor.handleCompletedAsks();
 
-		Example<ShortOrder> filledBidExample = Example.of(new ShortOrderBuilder().setRef(BID_REF).setOrderType(Order.OrderType.BID).setOrderStatus(Order.OrderStatus.FILLED).setOriginalPrice
-				(BID_ACTUAL_PRICE).createShortOrder());
+		Example<ShortOrder> filledBidExample = new ShortOrderBuilder().setRef(BID_REF).setOrderType(Order.OrderType.BID).setOrderStatus(Order.OrderStatus.FILLED).setOriginalPrice
+				(BID_ACTUAL_PRICE).createShortOrderExample();
 		assertThat(shortOrderRepository.findAll(filledBidExample).size()).isEqualTo(1);
 
-		Example<ShortOrder> filledAskExample = Example.of(new ShortOrderBuilder().setRef(ASK_REF).setOrderType(Order.OrderType.ASK).setOrderStatus(Order.OrderStatus.FILLED).setOriginalPrice
-				(BID_ACTUAL_PRICE).createShortOrder());
+		Example<ShortOrder> filledAskExample = new ShortOrderBuilder().setRef(ASK_REF).setOrderType(Order.OrderType.ASK).setOrderStatus(Order.OrderStatus.FILLED).setOriginalPrice
+				(BID_ACTUAL_PRICE).createShortOrderExample();
 		assertThat(shortOrderRepository.findAll(filledAskExample).size()).isEqualTo(1);
 	}
 
@@ -183,15 +183,16 @@ public class ShortOrderIntegrationTest {
 		shortOrderMonitor.handleCompletedBids();
 		shortOrderMonitor.handleCompletedAsks();
 
-		Example<ShortOrder> filledBidExample = Example.of(new ShortOrderBuilder().setRef(BID_REF).setOrderType(Order.OrderType.BID).setOrderStatus(Order.OrderStatus.FILLED).setOriginalPrice
-				(BID_ACTUAL_PRICE).createShortOrder());
+		Example<ShortOrder> filledBidExample = new ShortOrderBuilder().setRef(BID_REF).setOrderType(Order.OrderType.BID).setOrderStatus(Order.OrderStatus.FILLED).setOriginalPrice
+				(BID_ACTUAL_PRICE).createShortOrderExample();
 		assertThat(shortOrderRepository.findAll(filledBidExample).size()).isEqualTo(1);
 
-		Example<ShortOrder> cancelledAskExample = Example.of(new ShortOrderBuilder().setRef(ASK_REF).setOrderType(Order.OrderType.ASK).setOrderStatus(Order.OrderStatus.CANCELED).setOriginalPrice
-				(BID_ACTUAL_PRICE).createShortOrder());
+		Example<ShortOrder> cancelledAskExample = new ShortOrderBuilder().setRef(ASK_REF).setOrderType(Order.OrderType.ASK).setOrderStatus(Order.OrderStatus.CANCELED).setOriginalPrice
+				(BID_ACTUAL_PRICE).createShortOrderExample();
 		assertThat(shortOrderRepository.findAll(cancelledAskExample).size()).isEqualTo(1);
 
-		Example<ShortOrder> stopLossExample = Example.of(new ShortOrderBuilder().setRef(STOP_LOSS_REF).setOrderType(Order.OrderType.EXIT_ASK).setOrderStatus(Order.OrderStatus.NEW).createShortOrder());
+		Example<ShortOrder> stopLossExample = new ShortOrderBuilder().setRef(STOP_LOSS_REF).setOrderType(Order
+				.OrderType.EXIT_ASK).setOrderStatus(Order.OrderStatus.NEW).createShortOrderExample();
 		assertThat(shortOrderRepository.findAll(stopLossExample).size()).isEqualTo(1);
 	}
 
