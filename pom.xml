@@ -73,9 +73,21 @@
 			<artifactId>google-oauth-client-jetty</artifactId>
 			<version>1.23.0</version>
 		</dependency>
-
-
-
+		<dependency>
+			<groupId>net.dv8tion</groupId>
+			<artifactId>JDA</artifactId>
+			<version>3.4.0_317</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.mail</groupId>
+			<artifactId>javax.mail-api</artifactId>
+			<version>1.5.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.sun.mail</groupId>
+			<artifactId>javax.mail</artifactId>
+			<version>1.6.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -108,6 +120,15 @@
 			<id>sonatype-oss-snapshot</id>
 			<snapshots/>
 			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</repository>
+		<repository>
+			<id>jcenter</id>
+			<name>jcenter-bintray</name>
+			<url>http://jcenter.bintray.com</url>
+		</repository>
+		<repository>
+			<id>jitpack.io</id>
+			<url>https://jitpack.io</url>
 		</repository>
 	</repositories>
 

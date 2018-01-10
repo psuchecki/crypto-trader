@@ -43,7 +43,7 @@ public class GmailConfiguration {
 	}
 
 	public static Credential authorize() throws IOException, GeneralSecurityException {
-		InputStream in = GmailFeeder.class.getResourceAsStream("/gmail-secret.json");
+		InputStream in = GmailConfiguration.class.getResourceAsStream("/gmail-secret.json");
 		GoogleClientSecrets clientSecrets =
 				GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 

@@ -8,6 +8,7 @@ import org.springframework.util.CollectionUtils;
 
 import com.crypto.cryptotrader.calculation.CalculationConfig;
 import com.crypto.cryptotrader.calculation.CalculationConfigRepository;
+import com.crypto.cryptotrader.feeds.DiscordFeeder;
 import com.crypto.cryptotrader.feeds.GmailFeeder;
 import com.crypto.cryptotrader.shortorder.ShortOrderExecutor;
 import com.crypto.cryptotrader.shortorder.ShortOrderMonitor;

@@ -12,7 +12,7 @@ import com.crypto.cryptotrader.feeds.GmailConfiguration;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.services.gmail.Gmail;
 
-@EnableScheduling
+//@EnableScheduling
 @SpringBootApplication
 public class CryptoTraderApplication {
 
