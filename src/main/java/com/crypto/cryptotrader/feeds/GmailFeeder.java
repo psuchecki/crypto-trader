@@ -28,7 +28,7 @@ public class GmailFeeder {
 	@Autowired
 	private GmailAlanParser gmailAlanParser;
 
-	@Scheduled(fixedRate = 300)
+//	@Scheduled(fixedRate = 300)
 	public void checkForFeeds() throws IOException {
 //		logger.info("Checking gmail feeds");
 		ListMessagesResponse primary = gmailService.users().messages().list(AUTHENTICATED_USER)

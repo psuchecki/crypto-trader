@@ -23,7 +23,6 @@ public class GmailAlanParser {
 	public static final Pattern ALAN_PATTERN = Pattern.compile(ALAN_REGEX_PATTERN);
 	public static final Pattern ALAN_PATTERN_WITHOUT_CODE = Pattern.compile(WITHOUT_CODE_PATTERN);
 
-	public static final String REMOVE_PARENTHESIS_REGEX = "[()]";
 	@Autowired
 	private ShortOrderExecutor shortOrderExecutor;
 	@Autowired
@@ -35,7 +34,7 @@ public class GmailAlanParser {
 			logger.info("GMAIL ALAN: {}", message);
 			String baseCurrencyCode = matcher.group(matcher.groupCount());
 			if (StringUtils.isNotBlank(baseCurrencyCode)) {
-				baseCurrencyCode = baseCurrencyCode.replaceAll(REMOVE_PARENTHESIS_REGEX, StringUtils.EMPTY);
+				baseCurrencyCode = TextParserUtils.extractCurrencyCode(baseCurrencyCode);
 				shortOrderExecutor.executeShortBidOrder(baseCurrencyCode);
 				shortOrderMonitor.handleCompletedBids();
 			}
