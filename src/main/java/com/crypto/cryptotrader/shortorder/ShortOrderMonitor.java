@@ -40,7 +40,7 @@ public class ShortOrderMonitor {
 	@Autowired
 	private CalculationService calculationService;
 
-	@Scheduled(fixedRate = 2000)
+	@Scheduled(fixedRate = 1000)
 	public void handleCompletedBids() throws IOException {
 		Example<ShortOrder> pendingNewShortOrdersExample = new ShortOrderBuilder().setOrderStatus(Order.OrderStatus.NEW)
 				.setOrderType(Order.OrderType.BID).createShortOrderExample();

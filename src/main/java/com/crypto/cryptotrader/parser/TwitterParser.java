@@ -25,8 +25,7 @@ public class TwitterParser {
 
 	public void parseMessage(Status status) throws TesseractException, IOException {
 		String message = status.getText();
-		String occurence = TextParserUtils.findFirstOccurenceOfPattern(COIN_OF_THE_WEEK_PATTERN, message
-				.toUpperCase());
+		String occurence = TextParserUtils.findFirstOccurenceOfPattern(COIN_OF_THE_WEEK_PATTERN, message);
 
 		if (StringUtils.isNotEmpty(occurence) && status.getMediaEntities().length != 0) {
 			String imageUrl = status.getMediaEntities()[0].getMediaURL();

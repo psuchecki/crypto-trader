@@ -15,9 +15,13 @@ public class TextParserUtils {
 	}
 
 	public static String findFirstOccurenceOfPattern(String regex, String message) {
-		Matcher matcher = Pattern.compile(regex).matcher(message);
+		Matcher matcher = Pattern.compile(regex.toUpperCase()).matcher(message.toUpperCase());
 
 		return matcher.find() ? matcher.group(matcher.groupCount()) : StringUtils.EMPTY;
+	}
+
+	public static boolean hasPattern(String regex, String pattern) {
+		return StringUtils.isNotEmpty(findFirstOccurenceOfPattern(regex, pattern));
 	}
 
 

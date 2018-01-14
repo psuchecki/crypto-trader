@@ -48,7 +48,7 @@ public class Starter {
 	public void init() throws Exception {
 		initCurrencyCodes();
 		initCalculationConfig();
-//		imageParser.getCurrencyCodeFromImage();
+//		imageParser.getCurrencyCodeFromImage("C:\\Users\\psuchecki\\Desktop\\images\\unnamed.gif");
 //		gmailFeeder.checkForFeeds();
 //		shortOrderExecutor.executeShortBidOrder("DOGE");
 //		shortOrderMonitor.handleCompletedBids();
