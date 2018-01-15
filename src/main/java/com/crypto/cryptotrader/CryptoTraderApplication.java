@@ -1,7 +1,7 @@
 package com.crypto.cryptotrader;
 
 import net.sourceforge.tess4j.ITesseract;
-import net.sourceforge.tess4j.Tesseract;
+import net.sourceforge.tess4j.Tesseract1;
 import net.sourceforge.tess4j.util.LoadLibs;
 import twitter4j.TwitterStream;
 import twitter4j.TwitterStreamFactory;
@@ -46,7 +46,7 @@ public class CryptoTraderApplication {
 
 	@Bean
 	public ITesseract tesseract() {
-		ITesseract tesseract =  new Tesseract();
+		ITesseract tesseract =  new Tesseract1();
 		tesseract.setDatapath(LoadLibs.extractTessResources("tessdata").getParent());
 
 		return tesseract;

@@ -38,8 +38,8 @@ public class GmailFeeder {
 	public void checkForFeeds() throws IOException {
 //		logger.info("Checking gmail feeds");
 		ListMessagesResponse primary = gmailService.users().messages().list(AUTHENTICATED_USER)
-//				.setQ("from:premium.signals@tradunity.com is:unread").execute();
-				.setQ("from:piotr.jan.suchecki@gmail.com is:unread").execute();
+				.setQ("from:premium.signals@tradunity.com is:unread").execute();
+//				.setQ("from:piotr.jan.suchecki@gmail.com is:unread").execute();
 		if (primary == null || CollectionUtils.isEmpty(primary.getMessages())) {
 			return;
 		}
