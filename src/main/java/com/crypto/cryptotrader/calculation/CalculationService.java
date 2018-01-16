@@ -32,7 +32,7 @@ public class CalculationService {
 
 	public BigDecimal calculateStopLossThreshold(BigDecimal originalPrice) {
 		BigDecimal stopLossOffset = CalculationUtils.calculateOffset(originalPrice, getCalculationConfig()
-				.getStopLossOffsetPercentage());
+				.getStopLossThresholdPercentage());
 		return originalPrice.subtract(stopLossOffset);
 	}
 
